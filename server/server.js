@@ -11,19 +11,41 @@ import authRoutes from './routes/auth.js';
 const app = express();
 const port = 3000;
 
-await connectDB();
+// Initialize DB connection flag
+let dbConnected = false;
 
-//Middleware
+// Middleware - CORS must be first
+app.use(cors({
+  origin: process.env.CORS_ORIGIN || 'http://localhost:5173',
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
 app.use(express.json());
-app.use(cors());
-app.use(clerkMiddleware());
 
-// Auth routes (local)
+// Middleware to ensure DB is connected before processing requests
+app.use(async (req, res, next) => {
+  if (!dbConnected) {
+    try {
+      await connectDB();
+      dbConnected = true;
+    } catch (error) {
+      console.error('Database connection failed:', error.message);
+      return res.status(503).json({ error: 'Database connection failed' });
+    }
+  }
+  next();
+});
+
+// Auth routes (local) - before Clerk middleware
 app.use('/api/auth', authRoutes);
 
+// Clerk middleware - after auth routes so it doesn't block them
+app.use(clerkMiddleware());
 
-//API Routes
-app.get('/', (req, res) => res.send('Server Is Live!'))
+// Health check endpoint
+app.get('/', (req, res) => res.send('Server Is Live!'));
 app.use('/api/inngest', serve({ client: inngest, functions }));
 
 // For Vercel deployment

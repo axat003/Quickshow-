@@ -5,9 +5,8 @@
             "src": "server.js",
             "use": "@vercel/node",
             "config": {
-                "includeFiles":[
-                    "dist/**"
-                ]
+                "maxDuration": 30,
+                "memory": 1024
             }
         }
     ],
@@ -16,5 +15,15 @@
             "src": "/(.*)",
             "dest": "server.js"
         }
-    ]
+    ],
+    "env": {
+        "MONGODB_URI": "@mongodb_uri",
+        "CLERK_PUBLISHABLE_KEY": "@clerk_publishable_key",
+        "CLERK_SECRET_KEY": "@clerk_secret_key",
+        "INNGEST_API_KEY": "@inngest_api_key",
+        "INNGEST_SIGNING_KEY": "@inngest_signing_key",
+        "JWT_SECRET": "@jwt_secret",
+        "CLERK_WEBHOOK_SECRET": "@clerk_webhook_secret",
+        "NODE_ENV": "production"
+    }
 }
